@@ -1,0 +1,7 @@
+---
+tuning: true 
+debug: true
+external_url: https://dev/approve
+client: dev_client_external
+interaction_mode: API
+device_ID: 2346456

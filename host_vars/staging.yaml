@@ -1,0 +1,7 @@
+---
+tuning: true 
+debug: false
+external_url: https://staging/approve
+client: staging_client_external
+interaction_mode: API
+device_ID: 32443532
