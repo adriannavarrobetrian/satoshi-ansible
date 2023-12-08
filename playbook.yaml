@@ -12,6 +12,28 @@
         name: docker-compose
         state: present
 
+
+    - name: Create Docker Compose file
+      template:
+        src: files/docker-compose.yaml.j2
+        dest: /home/ubuntu/docker-compose.yaml
+      notify:
+        - Restart App
+
+    - name: Start Docker Compose services
+      command: "docker compose up --scale flask-app={{ replicas }} -d"
+      args:
+        chdir: /home/ubuntu/
+      ignore_errors: yes  # Ignore errors in case the services are already running
+
+
+  handlers:
+    - name: Restart App
+      docker_compose:
+        project_src: /home/ubuntu/
+        state: restarted
+        log_path: /home/ubuntu/logs    
+
     # - name: copy Docker Compose files
     #   copy:
     #     src: files/{{ item }}
@@ -19,114 +41,74 @@
     #   loop:
     #   - docker-compose.yaml
 
-    - name: Print the value of variable tuning
-      debug: 
-        msg: "{{ tuning}} "
 
-    - name: Print the value of variable debug
-      debug: 
-        msg: "{{ debug}} "
-
-    - name: Print the value of group variable client
-      debug: 
-        msg: "{{ client}} "
-
-    - name: Print the value of group variable interaction_mode
-      debug: 
-        msg: "{{ interaction_mode}} "
-
-    - name: Print the value of group variable device_ID
-      debug: 
-        msg: "{{ device_ID}} "
-    - name: Print the value of group variable external_url
-      debug: 
-        msg: "{{ external_url}} "
-
-    - name: Print the value of host variable app_image
-      debug: 
-        msg: "{{ app_image}} "
-    - name: Print the value of host variable docker_memory
-      debug: 
-        msg: "{{ docker_memory}} "
-    - name: Print the value of host variable docker_cpu
-      debug: 
-        msg: "{{ docker_cpu}} "
-    - name: Print the value of host variable docker_storage
-      debug: 
-        msg: "{{ docker_storage}} "
-
-    - name: Print the value of host variable playbook_dir
-      debug: 
-        msg: "{{ playbook_dir}} "
-
-
-    - name: deploy Docker Compose stack
-      community.docker.docker_compose:
-
-        project_name: flask-app
-        pull: true
-        state: present
-        definition:
-          version: '2'
-          services:
-            flask-app:
-              image: "{{app_image}}"
-              deploy:
-                resources:
-                  limits:
-                    memory: "{{ docker_memory }}"  
-                    cpus: "{{ docker_cpu }}"    
-              environment:
-                - TUNING={{ tuning }}
-                - DEBUG={{ debug }}
-                - EXTERNAL_URL={{ external_url }}
-                - CLIENT={{ client }}
-                - INTERACTION_MODE={{ interaction_mode }}
-                - DEVICE_ID={{ device_ID }}
-
-              restart: always
-              networks:
-                - my_network
-              volumes:
-                - secret-keys-volume:/app/secrets
-              ports:
-                - "8181"
-
-            nginx:
-              image: nginx:latest
-              volumes:
-                - "{{ playbook_dir }}/nginx.conf:/etc/nginx/nginx.conf:ro"
-
-              depends_on:
-                - flask-app
-              ports:
-                - "80:80"
-              networks:
-                - my_network
-
-          # volumes:
-          #   secret-keys-volume:
-          volumes:
-            secret-keys-volume:
-            app_data:
-              driver: local
-              driver_opts:
-                type: tmpfs
-                device: tmpfs
-                o: size=5G
-
-          networks:
-            my_network:
-            
-      register: output
-
-
-    # - name: Scale the web service to two instances
+    # - name: deploy Docker Compose stack
     #   community.docker.docker_compose:
-    #   project_src: /tmp
-    #     scale:
-    #       flask-app: 2
+
+    #     project_name: flask-app
+    #     pull: true
+    #     state: present
+    #     definition:
+    #       version: '2'
+    #       services:
+    #         flask-app:
+    #           image: "{{app_image}}"
+    #           deploy:
+    #             resources:
+    #               limits:
+    #                 memory: "{{ docker_memory }}"  
+    #                 cpus: "{{ docker_cpu }}"    
+    #           environment:
+    #             - TUNING={{ tuning }}
+    #             - DEBUG={{ debug }}
+    #             - EXTERNAL_URL={{ external_url }}
+    #             - CLIENT={{ client }}
+    #             - INTERACTION_MODE={{ interaction_mode }}
+    #             - DEVICE_ID={{ device_ID }}
+
+    #           restart: always
+    #           networks:
+    #             - my_network
+    #           volumes:
+    #             - secret-keys-volume:/app/secrets
+    #           ports:
+    #             - "8181"
+
+    #         nginx:
+    #           image: nginx:latest
+    #           volumes:
+    #             - "{{ playbook_dir }}/nginx.conf:/etc/nginx/nginx.conf:ro"
+
+    #           depends_on:
+    #             - flask-app
+    #           ports:
+    #             - "80:80"
+    #           networks:
+    #             - my_network
+
+    #       # volumes:
+    #       #   secret-keys-volume:
+    #       volumes:
+    #         secret-keys-volume:
+    #         app_data:
+    #           driver: local
+    #           driver_opts:
+    #             type: tmpfs
+    #             device: tmpfs
+    #             o: size=5G
+
+    #       networks:
+    #         my_network:
+            
     #   register: output
+
+
+    - name: Scale the web service to two instances
+      community.docker.docker_compose:
+        project_src: /home/ubuntu/
+        scale:
+          flask-app: 3
+      register: output
 
     - name: Show results
       ansible.builtin.debug:

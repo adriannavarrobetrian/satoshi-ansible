@@ -1,5 +1,6 @@
 ---
 app_image: adriannavarro/app:latest
-docker_memory: 1g
+docker_memory: 1G
 docker_cpu: 0.3
-docker_storage: 5g
+docker_storage: 5G
+replicas: 3

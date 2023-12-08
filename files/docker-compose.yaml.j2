@@ -1,26 +1,27 @@
 version: '2'
 services:
   flask-app:
-    image: adriannavarro/app:latest
+    image: {{ app_image }}
+    hostname: flask
     deploy:
       resources:
         limits:
-          memory: 1G  # 1GB of RAM
-          cpus: '0.3'  # 0.3 cores           
+          memory: {{ docker_memory }}  # 1GB of RAM
+          cpus: '{{ docker_cpu }}'  # 0.3 cores           
     restart: always
     networks:
       - my_network
     volumes:
       - secret-keys-volume:/app/secrets
     environment:
-      - TUNING=${TUNING}
-      - DEBUG=${DEBUG}
-      - EXTERNAL_URL=${EXTERNAL_URL}
-      - CLIENT=${CLIENT}
-      - INTERACTION_MODE=${INTERACTION_MODE}
-      - DEVICE_ID=${DEVICE_ID}
+      - TUNING={{ tuning }}
+      - DEBUG={{ debug }}
+      - EXTERNAL_URL={{ external_url }}
+      - CLIENT={{ client }}
+      - INTERACTION_MODE={{ interaction_mode }}
+      - DEVICE_ID={{ device_ID }}
     ports:
-      - "8181"
+      - ":8181"
 
   nginx:
     image: nginx:latest
@@ -40,7 +41,7 @@ volumes:
     driver_opts:
       type: tmpfs
       device: tmpfs
-      o: size=5G
+      o: size={{ docker_storage }}
 
 networks:
   my_network:
