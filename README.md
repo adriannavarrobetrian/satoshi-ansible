@@ -53,3 +53,8 @@ Ansible Proficiency: Utilization of Ansible best practices, including a well-str
 Dynamic Configuration: Skillful use of templates for dynamic configuration within the Ansible playbook.
 Documentation: Provision of comprehensive documentation that offers insights into design choices, assumptions, and code organization.
 Production Considerations:Thoughtful consideration of production best practices, encompassing aspects of security, scalability, and maintainability in the Ansible deployment.
+
+
+
+https://galaxy.ansible.com/ui/standalone/roles/geerlingguy/docker/
+/Users/adrian/.ansible/roles/geerlingguy.docker

@@ -2,7 +2,6 @@ version: '2'
 services:
   flask-app:
     image: {{ app_image }}
-    hostname: flask
     deploy:
       resources:
         limits:
@@ -21,16 +20,18 @@ services:
       - INTERACTION_MODE={{ interaction_mode }}
       - DEVICE_ID={{ device_ID }}
     ports:
-      - ":8181"
+      - "8181"
 
   nginx:
     image: nginx:latest
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./my-site.crt:/etc/ssl/certs/my-site.crt
+      - ./my-site.key:/etc/ssl/private/my-site.key
     depends_on:
       - flask-app
     ports:
-      - "80:80"
+      - "443:443"
     networks:
       - my_network
 

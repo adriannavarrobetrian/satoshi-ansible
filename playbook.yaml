@@ -1,115 +1,154 @@
 ---
-- name: Setup Docker on Ubuntu Server 22.04
+- name: Deploy app
   hosts: all
   become: true
 
   roles:
-    - docker
+    - geerlingguy.docker
 
   tasks:
-    - name: Ensure Docker Compose is installed
-      apt:
-        name: docker-compose
-        state: present
+  #   - name: Ensure Docker Compose is installed
+  #     apt:
+  #       name: docker-compose
+  #       state: present
+
+  - name: Creates directory
+    ansible.builtin.file:
+      path: /app
+      state: directory
+
+  - name: Copy file with owner and permissions
+    ansible.builtin.copy:
+      src: "{{ playbook_dir }}/app/nginx.conf"
+      dest: /app
+      owner: ubuntu
+      group: ubuntu
+      mode: '0644'
+
+  - name: Copy file with owner and permissions
+    ansible.builtin.copy:
+      src: "{{ playbook_dir }}/app/my-site.crt"
+      dest: /app
+      owner: ubuntu
+      group: ubuntu
+      mode: '0644'
+    
+  - name: Copy file with owner and permissions
+    ansible.builtin.copy:
+      src: "{{ playbook_dir }}/app/my-site.key"
+      dest: /app
+      owner: ubuntu
+      group: ubuntu
+      mode: '0644'
 
 
-    - name: Create Docker Compose file
-      template:
-        src: files/docker-compose.yaml.j2
-        dest: /home/ubuntu/docker-compose.yaml
-      notify:
-        - Restart App
-
-    - name: Start Docker Compose services
-      command: "docker compose up --scale flask-app={{ replicas }} -d"
-      args:
-        chdir: /home/ubuntu/
-      ignore_errors: yes  # Ignore errors in case the services are already running
+  - name: Create Docker Compose file
+    template:
+      src: files/docker-compose.yaml.j2
+      dest: /app/docker-compose.yaml
+      owner: ubuntu
+      group: ubuntu
+      mode: '0644'
 
 
-  handlers:
-    - name: Restart App
-      docker_compose:
-        project_src: /home/ubuntu/
-        state: restarted
-        log_path: /home/ubuntu/logs    
+  # - name: Run `docker-compose up`
+  #   community.docker.docker_compose:
+  #     project_src: /app
+  #     build: false
+  #   register: output
+  - name: Start Docker Compose services
+    command: "docker compose up --scale flask-app={{ replicas }} -d"
+    args:
+      chdir: /app/
+  
+  # - name: Stop Docker Compose services
+  #   command: "docker compose down"
+  #   args:
+  #     chdir: /app/
 
-    # - name: copy Docker Compose files
-    #   copy:
-    #     src: files/{{ item }}
-    #     dest: /home/ubuntu/{{ item }}
-    #   loop:
-    #   - docker-compose.yaml
+  # handlers:
+  #   - name: Restart App
+  #     docker_compose:
+  #       project_src: /home/ubuntu/
+  #       state: restarted
+  #       log_path: /home/ubuntu/logs    
 
-
-    # - name: deploy Docker Compose stack
-    #   community.docker.docker_compose:
-
-    #     project_name: flask-app
-    #     pull: true
-    #     state: present
-    #     definition:
-    #       version: '2'
-    #       services:
-    #         flask-app:
-    #           image: "{{app_image}}"
-    #           deploy:
-    #             resources:
-    #               limits:
-    #                 memory: "{{ docker_memory }}"  
-    #                 cpus: "{{ docker_cpu }}"    
-    #           environment:
-    #             - TUNING={{ tuning }}
-    #             - DEBUG={{ debug }}
-    #             - EXTERNAL_URL={{ external_url }}
-    #             - CLIENT={{ client }}
-    #             - INTERACTION_MODE={{ interaction_mode }}
-    #             - DEVICE_ID={{ device_ID }}
-
-    #           restart: always
-    #           networks:
-    #             - my_network
-    #           volumes:
-    #             - secret-keys-volume:/app/secrets
-    #           ports:
-    #             - "8181"
-
-    #         nginx:
-    #           image: nginx:latest
-    #           volumes:
-    #             - "{{ playbook_dir }}/nginx.conf:/etc/nginx/nginx.conf:ro"
-
-    #           depends_on:
-    #             - flask-app
-    #           ports:
-    #             - "80:80"
-    #           networks:
-    #             - my_network
-
-    #       # volumes:
-    #       #   secret-keys-volume:
-    #       volumes:
-    #         secret-keys-volume:
-    #         app_data:
-    #           driver: local
-    #           driver_opts:
-    #             type: tmpfs
-    #             device: tmpfs
-    #             o: size=5G
-
-    #       networks:
-    #         my_network:
-            
-    #   register: output
+  #   # - name: copy Docker Compose files
+  #   #   copy:
+  #   #     src: files/{{ item }}
+  #   #     dest: /home/ubuntu/{{ item }}
+  #   #   loop:
+  #   #   - docker-compose.yaml
 
 
-    - name: Scale the web service to two instances
-      community.docker.docker_compose:
-        project_src: /home/ubuntu/
-        scale:
-          flask-app: 3
-      register: output
+  # - name: deploy Docker Compose stack
+  #   community.docker.docker_compose:
 
-    - name: Show results
-      ansible.builtin.debug:
-        var: output
+  #     project_name: flask-app
+  #     pull: true
+  #     state: present
+  #     definition:
+  #       version: '2'
+  #       services:
+  #         flask-app:
+  #           image: "{{app_image}}"
+  #           deploy:
+  #             resources:
+  #               limits:
+  #                 memory: "{{ docker_memory }}"  
+  #                 cpus: "{{ docker_cpu }}"    
+  #           environment:
+  #             - TUNING={{ tuning }}
+  #             - DEBUG={{ debug }}
+  #             - EXTERNAL_URL={{ external_url }}
+  #             - CLIENT={{ client }}
+  #             - INTERACTION_MODE={{ interaction_mode }}
+  #             - DEVICE_ID={{ device_ID }}
+
+  #           restart: always
+  #           networks:
+  #             - my_network
+  #           volumes:
+  #             - secret-keys-volume:/app/secrets
+  #           ports:
+  #             - "8181"
+
+  #         nginx:
+  #           image: nginx:latest
+  #           volumes:
+  #             - "{{ playbook_dir }}/nginx.conf:/etc/nginx/nginx.conf:ro"
+
+  #           depends_on:
+  #             - flask-app
+  #           ports:
+  #             - "80:80"
+  #           networks:
+  #             - my_network
+
+  #       # volumes:
+  #       #   secret-keys-volume:
+  #       volumes:
+  #         secret-keys-volume:
+  #         app_data:
+  #           driver: local
+  #           driver_opts:
+  #             type: tmpfs
+  #             device: tmpfs
+  #             o: size=5G
+
+  #       networks:
+  #         my_network:
+          
+  #   register: output
+
+
+  #   - name: Scale the web service to two instances
+  #     community.docker.docker_compose:
+  #       project_src: /home/ubuntu/
+  #       scale:
+  #         flask-app: 3
+  #     register: output
+
+  #   - name: Show results
+  #     ansible.builtin.debug:
+  #       var: output

@@ -32,7 +32,7 @@
   apt:
     update_cache: yes
 
-# install docker-ce latetst verion
+# install docker-ce latest verion
 - name: Install docker
   apt:
     name: docker-ce
@@ -42,10 +42,10 @@
 # optional you may to add your user to docker group 
 
 #sudo groupadd docker
-# - name: Create "docker" group
-#   group:
-#     name: "{{ docker_group }}"
-#     state: present
+- name: Create "docker" group
+  group:
+    name: docker
+    state: present
 
 #sudo usermod -aG docker root
 - name: Add remote "ubuntu" user to "docker" group
@@ -54,7 +54,6 @@
     group: docker
     append: yes
 
-# install docker-compose 1.24.0 version, but you can specify the version you need & apply executable permissions to the binary
 - name: install docker-compose
   get_url:
     url: https://github.com/docker/compose/releases/download/1.24.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}

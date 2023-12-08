@@ -15,4 +15,4 @@ def hello():
 
 # Run the Flask app on port 8181
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8181)
+    app.run(ssl_context='adhoc',host='0.0.0.0', port=8181)
