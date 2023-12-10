@@ -87,7 +87,7 @@ docker buildx build --platform linux/amd64 -t adriannavarro/app:latest .
 docker push adriannavarro/app:latest
 ```
 
-The docker compose has also a nginx image with a self-signed certificate to be able to listen in port 443. It acts as a proxy to be able to scale the app container.
+The docker compose has also a nginx image with a self-signed certificate to be able to listen in port 443. It acts as a proxy to be able to scale the app.
 
 ```console
 {"message":"Hello from https://${ENV}/approve!"}
@@ -113,5 +113,5 @@ ansible-playbook -i inventory.ini playbook.yaml
 
 ## Conclusion
 
-This Ansible solution follows industry best practices for deploying applications to different environments. It uses variables to apply different configurations per environment, uses roles from Ansible Galaxy to organize the code better and uses secure ports to access the applications.
+This Ansible solution follows industry best practices for deploying applications to different environments. It uses variables to apply different configurations per environment, uses roles from Ansible Galaxy to organize the code better and uses secure ports to access the application.
 
